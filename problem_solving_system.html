@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ระบบเครื่องมือช่วยแก้ปัญหา</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{--bg1:#100822;--bg2:#2a1258;--pri:#8b5cf6;--pri2:#c4a1ff;--ink:#f6f1ff;--mut:#b7a8d8;--ok:#5eead4;--bad:#fb7185;--glass:rgba(255,255,255,.07);--line:rgba(255,255,255,.15);--field:rgba(14,8,30,.7)}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;font-family:Prompt,"Segoe UI",Tahoma,sans-serif;color:var(--ink);line-height:1.6;min-height:100vh;background:radial-gradient(900px 500px at 8% -10%,#5b2bb8 0,transparent 60%),radial-gradient(700px 500px at 100% 0,#2b3a9e 0,transparent 55%),linear-gradient(160deg,var(--bg1),var(--bg2));background-attachment:fixed}
+.wrap{max-width:960px;margin:0 auto;padding:22px 16px 60px}
+.top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;margin-bottom:6px}
+h1{font-size:clamp(24px,4vw,34px);margin:0;font-weight:700;letter-spacing:-.01em}
+.sub{color:var(--mut);margin:4px 0 0}
+.mode{font-size:13px;padding:6px 12px;border-radius:99px;border:1px solid var(--line);background:var(--glass);white-space:nowrap}
+.mode.on{color:var(--ok);border-color:rgba(94,234,212,.4)}
+.mode.off{color:#fcd34d;border-color:rgba(252,211,77,.4)}
+.tabs{display:flex;gap:6px;margin:20px 0;padding:6px;border-radius:16px;background:var(--glass);border:1px solid var(--line);overflow-x:auto}
+.tab{flex:1;min-width:110px;border:0;background:transparent;color:var(--mut);font:600 15px Prompt,sans-serif;padding:11px 14px;border-radius:11px;cursor:pointer;transition:.2s}
+.tab:hover{color:var(--ink)}
+.tab.on{background:linear-gradient(135deg,#8b5cf6,#6d3fe0);color:#fff;box-shadow:0 6px 20px rgba(139,92,246,.4)}
+.card{background:var(--glass);border:1px solid var(--line);border-radius:22px;padding:24px;margin-bottom:18px;backdrop-filter:blur(12px)}
+h2{margin:0 0 16px;font-size:21px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.f{margin-bottom:14px}
+label{display:block;font-weight:500;margin-bottom:6px;font-size:14px;color:#e4d9ff}
+input,select,textarea{width:100%;padding:12px 14px;border:1px solid #7c62b0;border-radius:12px;background:var(--field);color:var(--ink);font:400 15px Prompt,sans-serif}
+input:focus,select:focus,textarea:focus,button:focus-visible{outline:3px solid rgba(196,161,255,.55);outline-offset:1px}
+textarea{min-height:104px;resize:vertical}
+::placeholder{color:#8b7db0}
+select option{color:#111}
+.btn{border:0;border-radius:12px;padding:12px 22px;font:600 15px Prompt,sans-serif;cursor:pointer;transition:.15s}
+.btn:active{transform:scale(.97)}
+.p{background:linear-gradient(135deg,#9d6bff,#6d3fe0);color:#fff;box-shadow:0 6px 18px rgba(139,92,246,.35)}
+.s{background:rgba(255,255,255,.12);color:var(--ink);border:1px solid var(--line)}
+.acts{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px}
+.seg{display:flex;gap:8px;flex-wrap:wrap}
+.seg input{display:none}
+.seg span{display:block;padding:10px 18px;border-radius:12px;border:1px solid #7c62b0;background:var(--field);cursor:pointer;font-weight:500}
+.seg input:checked+span{background:var(--pri);border-color:var(--pri);color:#fff}
+.bar{height:10px;border-radius:9px;background:rgba(255,255,255,.12);overflow:hidden;margin:6px 0 4px}
+.bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#8b5cf6,#5eead4);transition:width .4s}
+.path{position:relative;margin:22px 0 4px;padding-left:34px}
+.path:before{content:"";position:absolute;left:13px;top:8px;bottom:8px;width:2px;background:var(--line)}
+.st{position:relative;margin-bottom:22px}
+.st .dot{position:absolute;left:-34px;top:0;width:28px;height:28px;border-radius:50%;background:#2a1a52;border:2px solid var(--pri);display:grid;place-items:center;font-size:13px;font-weight:700}
+.st.done .dot{background:var(--ok);border-color:var(--ok);color:#0b2a26}
+.st h3{margin:0 0 2px;font-size:17px}
+.hint{margin:0 0 8px;color:var(--mut);font-size:13.5px}
+.mem{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.note{padding:12px 14px;border-radius:12px;background:rgba(139,92,246,.18);color:#e7ddff;font-size:14px;margin-bottom:14px}
+table{width:100%;border-collapse:collapse;font-size:14.5px}
+th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line)}
+th{color:var(--mut);font-weight:500}
+.tbl{overflow-x:auto}
+.chip{display:inline-block;padding:2px 11px;border-radius:99px;font-size:13px;font-weight:500}
+.c-in{background:rgba(94,234,212,.18);color:var(--ok)}
+.c-late{background:rgba(252,211,77,.18);color:#fcd34d}
+.c-out{background:rgba(251,113,133,.18);color:var(--bad)}
+.stats{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.stats div{flex:1;min-width:110px;padding:12px 14px;border-radius:14px;background:rgba(0,0,0,.22)}
+.stats b{display:block;font-size:24px}
+.stats small{color:var(--mut)}
+.work{background:rgba(0,0,0,.2);border-radius:16px;padding:16px;margin-bottom:12px}
+.work h3{margin:0 0 6px;font-size:17px;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.work p{margin:4px 0;font-size:14.5px;white-space:pre-wrap}
+.work b{color:var(--pri2);font-weight:500}
+.work a{color:var(--pri2)}
+.empty{color:var(--mut);text-align:center;padding:22px}
+.hidden{display:none}
+.toast{position:fixed;left:50%;bottom:26px;transform:translate(-50%,30px);opacity:0;pointer-events:none;background:#1f1441;border:1px solid var(--ok);color:var(--ok);padding:12px 22px;border-radius:14px;font-weight:500;transition:.25s;z-index:9;max-width:90vw}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+.toast.bad{border-color:var(--bad);color:var(--bad)}
+@media(max-width:640px){.row,.mem{grid-template-columns:1fr}.card{padding:18px}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div>
+      <h1>ระบบเครื่องมือช่วยแก้ปัญหา</h1>
+      <p class="sub">ระบุปัญหา รวบรวมข้อมูล วิเคราะห์ และหาแนวทางแก้ ในที่เดียว</p>
+    </div>
+    <span id="mode" class="mode"></span>
+  </div>
+
+  <nav class="tabs" role="tablist">
+    <button class="tab on" data-tab="att">เช็กชื่อ</button>
+    <button class="tab" data-tab="work">กิจกรรมกลุ่ม</button>
+    <button class="tab" data-tab="sub">ส่งผลงาน</button>
+    <button class="tab" data-tab="teach">ห้องครู</button>
+  </nav>
+
+  <!-- เช็กชื่อ -->
+  <section id="t-att" class="card">
+    <h2>เช็กชื่อเข้าเรียน</h2>
+    <div class="row">
+      <div class="f"><label for="sName">ชื่อ-สกุล</label><input id="sName" placeholder="กรอกชื่อ-สกุล" autocomplete="off"></div>
+      <div class="f"><label for="sNo">เลขที่</label><input id="sNo" inputmode="numeric" placeholder="เช่น 12" autocomplete="off"></div>
+    </div>
+    <div class="row">
+      <div class="f"><label for="sGroup">กลุ่ม</label><select id="sGroup"></select></div>
+      <div class="f"><label>สถานะวันนี้</label>
+        <div class="seg" id="sStatus">
+          <label><input type="radio" name="st" value="เข้าเรียน" checked><span>เข้าเรียน</span></label>
+          <label><input type="radio" name="st" value="สาย"><span>สาย</span></label>
+          <label><input type="radio" name="st" value="ไม่เข้าเรียน"><span>ไม่เข้าเรียน</span></label>
+        </div>
+      </div>
+    </div>
+    <div class="acts"><button class="btn p" id="btnAtt">เช็กชื่อ</button></div>
+    <p class="hint" style="margin-top:12px">เช็กชื่อซ้ำในวันเดียวกัน ระบบจะอัปเดตสถานะเดิมให้</p>
+  </section>
+
+  <!-- กิจกรรมกลุ่ม -->
+  <section id="t-work" class="hidden">
+    <div class="card">
+      <h2>กลุ่มและสมาชิก</h2>
+      <div class="f" style="max-width:300px"><label for="g">เลือกกลุ่ม</label><select id="g"></select></div>
+      <label>สมาชิกกลุ่ม (สูงสุด 6 คน)</label>
+      <div class="mem" id="members"></div>
+    </div>
+    <div class="card">
+      <h2>กิจกรรม 4 ขั้นตอน</h2>
+      <div class="bar"><i id="pbar"></i></div>
+      <small id="ptxt" style="color:var(--mut)"></small>
+      <div class="path">
+        <div class="st" id="s1"><span class="dot">1</span><h3>ระบุปัญหา</h3><p class="hint">ปัญหาหรือความต้องการคืออะไร เกิดจากอะไร และกระทบใคร</p><textarea id="f_problem" placeholder="อธิบายปัญหาที่พบ"></textarea></div>
+        <div class="st" id="s2"><span class="dot">2</span><h3>รวบรวมข้อมูล</h3><p class="hint">ข้อมูลจากแหล่งที่น่าเชื่อถือ พร้อมระบุที่มา</p><textarea id="f_info" placeholder="ข้อมูลที่ค้นพบ"></textarea><input id="f_source" style="margin-top:8px" placeholder="แหล่งที่มา เช่น ชื่อเว็บไซต์ หนังสือ" autocomplete="off"></div>
+        <div class="st" id="s3"><span class="dot">3</span><h3>วิเคราะห์ข้อมูล</h3><p class="hint">หาสาเหตุ ความสัมพันธ์ และประเด็นสำคัญจากข้อมูล</p><textarea id="f_analysis" placeholder="ผลการวิเคราะห์"></textarea></div>
+        <div class="st" id="s4"><span class="dot">4</span><h3>สังเคราะห์แนวทางแก้ปัญหา</h3><p class="hint">เสนอวิธีแก้ที่อ้างอิงจากข้อมูลที่วิเคราะห์</p><textarea id="f_solution" placeholder="แนวทางแก้ปัญหา"></textarea></div>
+      </div>
+      <div class="acts"><button class="btn p" id="btnSave">บันทึกกิจกรรม</button></div>
+    </div>
+  </section>
+
+  <!-- ส่งผลงาน -->
+  <section id="t-sub" class="hidden">
+    <div class="card">
+      <h2>ส่งผลงาน <span id="subGroup" style="color:var(--pri2);font-weight:500"></span></h2>
+      <div class="row">
+        <div class="f"><label for="file">ใบงาน (pdf, doc, docx, jpg, png)</label><input type="file" id="file" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"><p class="hint" id="fileInfo" style="margin-top:6px"></p></div>
+        <div class="f"><label for="slide">ลิงก์สไลด์นำเสนอ</label><input id="slide" placeholder="วางลิงก์ Google Slides / Canva / PowerPoint" autocomplete="off"></div>
+      </div>
+      <div class="acts">
+        <button class="btn s" id="btnReview">ตรวจสอบก่อนส่ง</button>
+        <button class="btn p" id="btnSubmit">ส่งผลงาน</button>
+      </div>
+    </div>
+    <div class="card hidden" id="reviewCard"><h2>ตรวจสอบก่อนส่ง</h2><div id="review"></div></div>
+  </section>
+
+  <!-- ห้องครู -->
+  <section id="t-teach" class="hidden">
+    <div class="card">
+      <h2>สรุปการเข้าเรียน</h2>
+      <div class="acts" style="margin:0 0 14px;align-items:end">
+        <div><label for="tDate">วันที่</label><input type="date" id="tDate" style="width:190px"></div>
+        <button class="btn s" id="btnRefresh">รีเฟรช</button>
+      </div>
+      <div class="stats" id="tStats"></div>
+      <div class="tbl" id="tAtt"></div>
+    </div>
+    <div class="card">
+      <h2>ผลงานแต่ละกลุ่ม</h2>
+      <div id="tWorks"></div>
+    </div>
+  </section>
+</div>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+/* ============ ตั้งค่า: ใส่ค่าจาก Supabase ตรงนี้ ============ */
+const CONFIG={
+  SUPABASE_URL:"https://syodqcnwxuzhulrhoxfy.supabase.co",       // เช่น https://abcdxyz.supabase.co
+  SUPABASE_ANON_KEY:"sb_publishable_FaYPBHtPB0LMo-UsRNtuhw_OQQigz9C",   // anon public key
+  BUCKET:"worksheets",    // ชื่อ Storage bucket สำหรับเก็บใบงาน
+  GROUPS:6,               // จำนวนกลุ่ม
+  TEACHER_PIN:"1234"      // รหัสเข้าห้องครู (กันเปิดผิด ไม่ใช่ความปลอดภัยจริง)
+};
+/* ======================================================== */
+
+const $=id=>document.getElementById(id);
+const esc=v=>String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
+const safeUrl=u=>{try{const x=new URL(u);return /^https?:$/.test(x.protocol)?x.href:""}catch{return""}};
+const today=()=>{const d=new Date();return new Date(d-d.getTimezoneOffset()*6e4).toISOString().slice(0,10)};
+let sb=null,unlocked=false;
+if(CONFIG.SUPABASE_URL&&CONFIG.SUPABASE_ANON_KEY&&window.supabase){sb=supabase.createClient(CONFIG.SUPABASE_URL,CONFIG.SUPABASE_ANON_KEY)}
+$("mode").textContent=sb?"● เชื่อมต่อ Supabase แล้ว":"● โหมดทดลอง: เก็บในเบราว์เซอร์นี้";
+$("mode").className="mode "+(sb?"on":"off");
+
+/* ---------- ชั้นฐานข้อมูล (Supabase หรือ LocalStorage) ---------- */
+const LS="pss_v2",ME="pss_me";
+const L={get(){try{return JSON.parse(localStorage.getItem(LS))||{att:[],works:{}}}catch{return{att:[],works:{}}}},set(v){localStorage.setItem(LS,JSON.stringify(v))}};
+const fail=e=>{throw new Error(e.message||e)};
+async function saveAtt(r){
+  if(sb){const{error}=await sb.from("attendance").upsert(r,{onConflict:"student_no,date"});if(error)fail(error);return}
+  const d=L.get();d.att=d.att.filter(x=>!(x.student_no==r.student_no&&x.date==r.date));d.att.push(r);L.set(d)}
+async function listAtt(date){
+  if(sb){const{data,error}=await sb.from("attendance").select("*").eq("date",date).order("student_no");if(error)fail(error);return data}
+  return L.get().att.filter(x=>x.date==date).sort((a,b)=>a.student_no-b.student_no)}
+async function saveWork(w){
+  if(sb){const{error}=await sb.from("works").upsert(w,{onConflict:"group_no"});if(error)fail(error);return}
+  const d=L.get();d.works[w.group_no]=Object.assign(d.works[w.group_no]||{},w);L.set(d)}
+async function getWork(g){
+  if(sb){const{data,error}=await sb.from("works").select("*").eq("group_no",+g).maybeSingle();if(error)fail(error);return data}
+  return L.get().works[g]||null}
+async function listWorks(){
+  if(sb){const{data,error}=await sb.from("works").select("*").order("group_no");if(error)fail(error);return data}
+  return Object.values(L.get().works).sort((a,b)=>a.group_no-b.group_no)}
+async function upload(f,g){
+  if(!sb)return"";
+  const path=`g${g}/${Date.now()}_${f.name.replace(/[^\w.\-]/g,"_")}`;
+  const{error}=await sb.storage.from(CONFIG.BUCKET).upload(path,f);if(error)fail(error);return path}
+const fileUrl=p=>sb&&p?sb.storage.from(CONFIG.BUCKET).getPublicUrl(p).data.publicUrl:"";
+
+/* ---------- UI พื้นฐาน ---------- */
+function toast(m,bad){const t=$("toast");t.textContent=m;t.className="toast show"+(bad?" bad":"");clearTimeout(toast.t);toast.t=setTimeout(()=>t.className="toast",2800)}
+function go(t){
+  if(t==="teach"&&!unlocked){const p=prompt("กรอกรหัสสำหรับครู");if(p!==CONFIG.TEACHER_PIN)return toast("รหัสไม่ถูกต้อง",1);unlocked=true}
+  document.querySelectorAll(".tab").forEach(b=>b.classList.toggle("on",b.dataset.tab===t));
+  ["att","work","sub","teach"].forEach(k=>$("t-"+k).classList.toggle("hidden",k!==t));
+  if(t==="teach")renderTeacher();if(t==="sub")loadSub();
+}
+document.querySelectorAll(".tab").forEach(b=>b.onclick=()=>go(b.dataset.tab));
+const gopts='<option value="">-- เลือกกลุ่ม --</option>'+Array.from({length:CONFIG.GROUPS},(_,i)=>`<option value="${i+1}">กลุ่มที่ ${i+1}</option>`).join("");
+$("sGroup").innerHTML=gopts;$("g").innerHTML=gopts;
+$("members").innerHTML=Array.from({length:6},(_,i)=>`<input class="mem-i" placeholder="สมาชิกคนที่ ${i+1}" autocomplete="off">`).join("");
+const me=JSON.parse(localStorage.getItem(ME)||"{}");
+$("sName").value=me.name||"";$("sNo").value=me.no||"";$("sGroup").value=me.group||"";$("g").value=me.group||"";
+
+/* ---------- เช็กชื่อ ---------- */
+$("btnAtt").onclick=async()=>{
+  const name=$("sName").value.trim(),no=parseInt($("sNo").value,10),group=$("sGroup").value;
+  if(!name||!no||!group)return toast("กรอกชื่อ เลขที่ และเลือกกลุ่มให้ครบ",1);
+  const status=document.querySelector('input[name=st]:checked').value;
+  try{
+    await saveAtt({student_no:no,name,group_no:+group,status,date:today()});
+    localStorage.setItem(ME,JSON.stringify({name,no,group}));$("g").value=group;
+    toast("เช็กชื่อเรียบร้อย");loadWork();
+  }catch(e){toast("บันทึกไม่สำเร็จ: "+e.message,1)}
+};
+
+/* ---------- กิจกรรมกลุ่ม ---------- */
+const FIELDS=[["problem","f_problem","s1"],["info","f_info","s2"],["analysis","f_analysis","s3"],["solution","f_solution","s4"]];
+function progress(){
+  let n=0;FIELDS.forEach(([,id,s])=>{const ok=$(id).value.trim().length>0;if(ok)n++;$(s).classList.toggle("done",ok);$(s).querySelector(".dot").textContent=ok?"✓":s[1]});
+  $("pbar").style.width=n*25+"%";$("ptxt").textContent=`ทำแล้ว ${n} จาก 4 ขั้นตอน`;return n}
+FIELDS.forEach(([,id])=>$(id).addEventListener("input",progress));
+async function loadWork(){
+  const g=$("g").value;
+  const w=g?await getWork(g).catch(e=>(toast("โหลดข้อมูลไม่สำเร็จ: "+e.message,1),null)):null;
+  FIELDS.forEach(([k,id])=>$(id).value=w?.[k]||"");$("f_source").value=w?.source||"";
+  document.querySelectorAll(".mem-i").forEach((el,i)=>el.value=w?.members?.[i]||"");
+  progress();
+}
+$("g").onchange=loadWork;
+async function saveActivity(){
+  const g=$("g").value;if(!g){toast("เลือกกลุ่มก่อนบันทึก",1);return false}
+  try{
+    await saveWork({group_no:+g,members:[...document.querySelectorAll(".mem-i")].map(x=>x.value.trim()),
+      problem:$("f_problem").value,info:$("f_info").value,source:$("f_source").value,analysis:$("f_analysis").value,solution:$("f_solution").value,
+      updated_at:new Date().toISOString()});
+    toast("บันทึกกิจกรรมแล้ว");return true;
+  }catch(e){toast("บันทึกไม่สำเร็จ: "+e.message,1);return false}
+}
+$("btnSave").onclick=saveActivity;
+
+/* ---------- ส่งผลงาน ---------- */
+async function loadSub(){
+  const g=$("g").value;$("subGroup").textContent=g?`(กลุ่มที่ ${g})`:"";
+  if(!g)return;const w=await getWork(g).catch(()=>null);
+  $("slide").value=w?.slide_link||"";$("fileInfo").textContent=w?.worksheet_name?`ไฟล์ที่ส่งไว้แล้ว: ${w.worksheet_name}`:"";
+}
+$("file").onchange=()=>{if($("file").files[0])$("fileInfo").textContent="เลือกไฟล์: "+$("file").files[0].name};
+async function review(){
+  const g=$("g").value;if(!g){toast("เลือกกลุ่มในหน้ากิจกรรมก่อน",1);return}
+  const w=await getWork(g)||{};const url=safeUrl(w.slide_link||"");
+  $("reviewCard").classList.remove("hidden");
+  $("review").innerHTML=`<div class="work"><h3>กลุ่มที่ ${esc(g)}</h3>
+  <p><b>สมาชิก:</b> ${esc((w.members||[]).filter(Boolean).join(", ")||"-")}</p>
+  <p><b>1 ปัญหา:</b> ${esc(w.problem||"-")}</p><p><b>2 ข้อมูล:</b> ${esc(w.info||"-")}<br><b>แหล่งที่มา:</b> ${esc(w.source||"-")}</p>
+  <p><b>3 วิเคราะห์:</b> ${esc(w.analysis||"-")}</p><p><b>4 แนวทางแก้:</b> ${esc(w.solution||"-")}</p>
+  <p><b>ใบงาน:</b> ${esc(w.worksheet_name||"ยังไม่ได้ส่ง")}</p>
+  <p><b>สไลด์:</b> ${url?`<a href="${esc(url)}" target="_blank" rel="noopener">เปิดลิงก์</a>`:"ยังไม่ได้ส่ง"}</p></div>`;
+}
+$("btnReview").onclick=async()=>{const s=await saveActivity();if(s)review()};
+$("btnSubmit").onclick=async()=>{
+  const g=$("g").value;if(!g)return toast("เลือกกลุ่มในหน้ากิจกรรมก่อน",1);
+  if(progress()<4)return toast("ทำกิจกรรมให้ครบ 4 ขั้นตอนก่อนส่ง",1);
+  const link=$("slide").value.trim();if(link&&!safeUrl(link))return toast("ลิงก์สไลด์ต้องขึ้นต้นด้วย http:// หรือ https://",1);
+  try{
+    if(!await saveActivity())return;
+    const w={group_no:+g,slide_link:link,submitted_at:new Date().toISOString()};
+    const f=$("file").files[0];if(f){w.worksheet_name=f.name;w.worksheet_path=await upload(f,g)}
+    await saveWork(w);toast("ส่งผลงานเรียบร้อย");$("file").value="";loadSub();review();
+  }catch(e){toast("ส่งไม่สำเร็จ: "+e.message,1)}
+};
+
+/* ---------- ห้องครู ---------- */
+$("tDate").value=today();$("tDate").onchange=renderTeacher;$("btnRefresh").onclick=renderTeacher;
+const chip=s=>`<span class="chip ${s==="เข้าเรียน"?"c-in":s==="สาย"?"c-late":"c-out"}">${esc(s)}</span>`;
+async function renderTeacher(){
+  try{
+    const att=await listAtt($("tDate").value||today()),works=await listWorks();
+    const c=s=>att.filter(x=>x.status===s).length;
+    $("tStats").innerHTML=`<div><b>${att.length}</b><small>เช็กชื่อแล้ว</small></div><div><b>${c("เข้าเรียน")}</b><small>เข้าเรียน</small></div><div><b>${c("สาย")}</b><small>สาย</small></div><div><b>${c("ไม่เข้าเรียน")}</b><small>ไม่เข้าเรียน</small></div>`;
+    $("tAtt").innerHTML=att.length?`<table><tr><th>เลขที่</th><th>ชื่อ-สกุล</th><th>กลุ่ม</th><th>สถานะ</th></tr>${att.map(x=>`<tr><td>${esc(x.student_no)}</td><td>${esc(x.name)}</td><td>${esc(x.group_no)}</td><td>${chip(x.status)}</td></tr>`).join("")}</table>`:`<div class="empty">ยังไม่มีการเช็กชื่อในวันนี้</div>`;
+    $("tWorks").innerHTML=works.length?works.map(w=>{
+      const n=["problem","info","analysis","solution"].filter(k=>(w[k]||"").trim()).length,url=safeUrl(w.slide_link||""),fu=fileUrl(w.worksheet_path);
+      return`<div class="work"><h3><span>กลุ่มที่ ${esc(w.group_no)}</span><span class="chip ${w.submitted_at?"c-in":"c-late"}">${w.submitted_at?"ส่งแล้ว":"กำลังทำ "+n+"/4"}</span></h3>
+      <p><b>สมาชิก:</b> ${esc((w.members||[]).filter(Boolean).join(", ")||"-")}</p>
+      <p><b>ปัญหา:</b> ${esc(w.problem||"-")}</p><p><b>ข้อมูล:</b> ${esc(w.info||"-")} <b>(${esc(w.source||"ไม่ระบุที่มา")})</b></p>
+      <p><b>วิเคราะห์:</b> ${esc(w.analysis||"-")}</p><p><b>แนวทางแก้:</b> ${esc(w.solution||"-")}</p>
+      <p><b>ใบงาน:</b> ${fu?`<a href="${esc(fu)}" target="_blank" rel="noopener">${esc(w.worksheet_name)}</a>`:esc(w.worksheet_name||"-")} &nbsp; <b>สไลด์:</b> ${url?`<a href="${esc(url)}" target="_blank" rel="noopener">เปิดลิงก์</a>`:"-"}</p></div>`}).join(""):`<div class="empty">ยังไม่มีกลุ่มไหนบันทึกงาน</div>`;
+  }catch(e){toast("โหลดข้อมูลไม่สำเร็จ: "+e.message,1)}
+}
+loadWork();
+</script>
+</body>
+</html>
